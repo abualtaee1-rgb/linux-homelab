@@ -1,4 +1,4 @@
-## Linux Home Lab: Hardened Ubuntu Server
+# Linux Home Lab: Hardened Ubuntu Server
 
 The first project in my DevOps portfolio. I built an Ubuntu Server 26.04 LTS
 VM in VirtualBox (bridged networking) and hardened it step by step: key-only
