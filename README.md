@@ -1,3 +1,18 @@
+## Linux Home Lab: Hardened Ubuntu Server
+
+The first project in my DevOps portfolio. I built an Ubuntu Server 26.04 LTS
+VM in VirtualBox (bridged networking) and hardened it step by step: key-only
+SSH with root login disabled, a default-deny firewall with rate-limited SSH,
+a least-privilege sudo rule, and fail2ban. I tested each layer and saved the
+evidence in [`docs/evidence`](docs/evidence).
+
+I'm studying DevOps engineering in Sweden, and this is the first step in
+building a portfolio of hands-on projects. Below are the problems I hit along
+the way and how I fixed them, since that's where I learned the most.
+
+**Skills shown:** Linux administration, SSH hardening, UFW, sudo and least
+privilege, fail2ban, Git and GitHub
+
 ## What broke and how i fixed it
 
 ### 1. A sudoers rule that was valid but did nothing
