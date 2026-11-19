@@ -38,6 +38,7 @@ reported "parsed OK", so I almost moved on. Running `sudo -l -U alice` showed
 the rule exactly as sudo understood it, slashes included, which would never
 match a real command. Fixing it and testing as alice confirmed the allowed
 command worked and `systemctl stop ssh` was refused.
+
 **Lesson:** a syntax check proves the file parses, not that the rule does what
 I meant. I now test the behaviour as the affected user.
 
@@ -50,6 +51,7 @@ tested from my PC: three failed logins, and the ban was logged the same second
 as the third failure. The blocked connection timed out instead of returning
 "Permission denied", which showed the firewall was dropping packets before sshd
 saw them.
+
 **Lesson:** know what a tool actually measures before tuning it.
 
 
@@ -62,6 +64,7 @@ problem. The cause was in `jail.conf`: `ignoreself = true` makes fail2ban skip
 the server's own addresses, so failures from the VM never counted. Repeating
 the test from my PC (a different address) produced three `Found` lines and a
 ban within the same second.
+
 **Lesson:** when a test shows nothing, check where the test came from before
 blaming the tool. The test itself can be the problem.
 
