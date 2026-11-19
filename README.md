@@ -1,1 +1,41 @@
 ## What broke and how i fixed it
+
+### 1. A sudoers rule that was valid but did nothing
+I wrote a rule to let the `deployers` group run `systemctl status ssh`, but I
+wrote the arguments as `/status /ssh`, as if they were paths. `visudo -c`
+reported "parsed OK", so I almost moved on. Running `sudo -l -U alice` showed
+the rule exactly as sudo understood it, slashes included, which would never
+match a real command. Fixing it and testing as alice confirmed the allowed
+command worked and `systemctl stop ssh` was refused.
+**Lesson:** a syntax check proves the file parses, not that the rule does what
+I meant. I now test the behaviour as the affected user.
+
+### 2. Tuning fail2ban for the wrong threat
+My first config was `maxretry = 10` and `findtime = 1m`, because I was thinking
+about flood attacks. fail2ban doesn't measure traffic volume. It counts failed
+authentication attempts per IP, so those values made brute-forcing easier, and
+a flood from many addresses would never trip it. I changed `maxretry` to 3 and
+tested from my PC: three failed logins, and the ban was logged the same second
+as the third failure. The blocked connection timed out instead of returning
+"Permission denied", which showed the firewall was dropping packets before sshd
+saw them.
+**Lesson:** know what a tool actually measures before tuning it.
+
+
+### 3. fail2ban counted zero failures on my first test
+I tested fail2ban by running `ssh wronguser@<vm-ip>` from the VM itself.
+`fail2ban-client status sshd` still showed `Total failed: 0`. I first assumed
+the filter wasn't matching the log lines, so I ran `fail2ban-regex` against the
+real journal. It matched the "Invalid user" lines fine, so the filter wasn't the
+problem. The cause was in `jail.conf`: `ignoreself = true` makes fail2ban skip
+the server's own addresses, so failures from the VM never counted. Repeating
+the test from my PC (a different address) produced three `Found` lines and a
+ban within the same second.
+**Lesson:** when a test shows nothing, check where the test came from before
+blaming the tool. The test itself can be the problem.
+
+### 4. A config file that was never saved
+After editing `01-hardening.conf` in nano, `cat` returned "No such file". I had
+exited without saving. I'd have found out much later if I hadn't checked, so I
+now verify every change with `cat` and `sshd -T` before reloading. I also keep
+a second SSH session open as a way back in until the new settings are proven.
