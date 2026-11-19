@@ -13,6 +13,22 @@ the way and how I fixed them, since that's where I learned the most.
 **Skills shown:** Linux administration, SSH hardening, UFW, sudo and least
 privilege, fail2ban, Git and GitHub
 
+## Setup
+
+- **Host and hypervisor:** Windows 11, VirtualBox
+- **VM:** Ubuntu Server 26.04.1 LTS, 2 GB RAM, 2 CPUs, 25 GB disk. I used
+  VirtualBox's default sizing; measured usage (about 17% memory, 15% disk)
+  showed it was plenty for a text-only server.
+- **Why this OS:** it's the same release used in my course, so the lab
+  reinforces what I'm studying. LTS is also what production teams run.
+- **Networking:** Bridged adapter, so the VM behaves like a real server on my
+  network. The trade-off is that other devices on my home network could reach
+  it before hardening. I kept that window short and hardened SSH first. My
+  router blocks unsolicited inbound traffic from the internet.
+- **Access:** I connect from Windows PowerShell using the built-in OpenSSH
+  client and an ed25519 key pair. The private key stays on my PC, protected
+  by a passphrase, and the public key is in `authorized_keys` on the VM.
+
 ## What broke and how I fixed it
 
 ### 1. A sudoers rule that was valid but did nothing
