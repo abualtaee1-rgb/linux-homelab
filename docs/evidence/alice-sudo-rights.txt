@@ -1,0 +1,2 @@
+User alice may run the following commands on Ubuntuserver:
+    (root) /usr/bin/systemctl status ssh

@@ -1,0 +1,2 @@
+%deployers ALL=(root) /usr/bin/systemctl status ssh
+
