@@ -13,7 +13,7 @@ the way and how I fixed them, since that's where I learned the most.
 **Skills shown:** Linux administration, SSH hardening, UFW, sudo and least
 privilege, fail2ban, Git and GitHub
 
-## What broke and how i fixed it
+## What broke and how I fixed it
 
 ### 1. A sudoers rule that was valid but did nothing
 I wrote a rule to let the `deployers` group run `systemctl status ssh`, but I
