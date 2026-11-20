@@ -29,6 +29,39 @@ privilege, fail2ban, Git and GitHub
   client and an ed25519 key pair. The private key stays on my PC, protected
   by a passphrase, and the public key is in `authorized_keys` on the VM.
 
+## Hardening steps
+
+### SSH
+Configured in `/etc/ssh/sshd_config.d/01-hardening.conf` ([file](docs/evidence/sshd-hardening.conf)):
+
+- **`PermitRootLogin no`**: every Linux server has a `root` account, so attackers never have to guess the username. The Ubuntu default (`prohibit-password`) still allows root to log in with a key. Setting it to `no` removes that route entirely, so admin work happens through a named user and `sudo`.
+- **`PasswordAuthentication no`**: removes password guessing as an attack. Only someone holding my private key can log in.
+- **`KbdInteractiveAuthentication no`**: SSH can also ask for a password through PAM (keyboard-interactive), which can stay open even when `PasswordAuthentication` is off. Disabling both closes every password route.
+
+### Firewall (UFW)
+Default deny for incoming traffic, default allow for outgoing, and `ufw limit` on SSH (22/tcp). The limit rule temporarily blocks an address that makes too many connection attempts in a short time ([output](docs/evidence/ufw-status.txt)).
+
+### Least-privilege sudo
+Instead of giving every user full root, I created a `deployers` group and a rule in `/etc/sudoers.d/90-deployers` that lets its members run exactly one command as root: `systemctl status ssh` ([file](docs/evidence/sudoers-90-deployers.txt)). Test user `alice` is a member.
+
+### fail2ban
+The `sshd` jail reads from the systemd journal and bans an address after 3 failed logins within 1 minute, for 10 minutes ([config](docs/evidence/fail2ban-sshd.local)). The 1-minute window is short so the demo is quick. A real deployment would use a longer window so slow attackers are still caught.
+
+### Updates
+Installed all pending package updates with `apt update` and `apt upgrade`.
+
+## How I verified it
+
+| What | How I tested it | Result |
+|---|---|---|
+| Passwords are off | `ssh -o PubkeyAuthentication=no user@vm` | `Permission denied (publickey)`, with no password prompt |
+| Key login works | Logged in from a second terminal before closing the first | Asked for my key passphrase, then logged in |
+| Effective SSH settings | `sudo sshd -T` ([output](docs/evidence/sshd-effective-settings.txt)) | `permitrootlogin no`, `passwordauthentication no`, `kbdinteractiveauthentication no` |
+| Firewall | `sudo ufw status verbose`, then a new SSH connection | Default deny incoming, SSH rate-limited, still reachable |
+| sudo least privilege | `sudo -l -U alice` ([output](docs/evidence/alice-sudo-rights.txt)), then tested as alice | `status ssh` worked, `stop ssh` was refused |
+| fail2ban | Failed 3 logins from my PC ([log](docs/evidence/fail2ban-log-ban-unban.txt)) | Ban logged in the same second as the third failure, and the connection then timed out |
+| Settings survive a reboot | Rebooted, then re-ran the checks above | Everything still in force |
+
 ## What broke and how I fixed it
 
 ### 1. A sudoers rule that was valid but did nothing
