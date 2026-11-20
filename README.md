@@ -36,7 +36,7 @@ Configured in `/etc/ssh/sshd_config.d/01-hardening.conf` ([file](docs/evidence/s
 
 - **`PermitRootLogin no`**: every Linux server has a `root` account, so attackers never have to guess the username. The Ubuntu default (`prohibit-password`) still allows root to log in with a key. Setting it to `no` removes that route entirely, so admin work happens through a named user and `sudo`.
 - **`PasswordAuthentication no`**: removes password guessing as an attack. Only someone holding my private key can log in.
-- **`KbdInteractiveAuthentication no`**: SSH can also ask for a password through PAM (keyboard-interactive), which can stay open even when `PasswordAuthentication` is off. Disabling both closes every password route.
+- **`KbdInteractiveAuthentication no`**: SSH can also ask for a password through PAM (keyboard-interactive). Ubuntu already ships with this off, and I set it explicitly so the hardening stays correct even if the default changes or the file is edited later.
 
 ### Firewall (UFW)
 Default deny for incoming traffic, default allow for outgoing, and `ufw limit` on SSH (22/tcp). The limit rule temporarily blocks an address that makes too many connection attempts in a short time ([output](docs/evidence/ufw-status.txt)).
